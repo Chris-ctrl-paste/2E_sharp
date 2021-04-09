@@ -6,12 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using backend;
 using Discord;
+using Victoria;
 using Discord.Addons.Hosting;
 using Discord.Commands;
 using Discord.WebSocket;
-
 using Microsoft.Extensions.Configuration;
-
 using discordbot.Common;
 using discordbot.Utilities;
 
@@ -26,10 +25,11 @@ namespace discordbot.Services
         private readonly IConfiguration _config;
         private readonly Servers _servers;
         private readonly ServerHelper _serverHelper;
+        private readonly LavaNode _LavaNode;
         private readonly Images _images;
         public static List<Mute> Mutes = new List<Mute>();
 
-        public CommandHandler(IServiceProvider provider, DiscordSocketClient client, CommandService service, IConfiguration config, Servers servers, ServerHelper serverHelper, Images images)
+        public CommandHandler(IServiceProvider provider, DiscordSocketClient client, CommandService service, IConfiguration config, Servers servers, ServerHelper serverHelper, Images images, LavaNode LavaNode)
         {
             _provider = provider;
             _client = client;
@@ -38,12 +38,19 @@ namespace discordbot.Services
             _servers = servers;
             _serverHelper = serverHelper;
             _images = images;
+            _LavaNode = LavaNode;
         }
+
+
+
+
 
         public override async Task InitializeAsync(CancellationToken cancellationToken)
         {
+            
             _client.MessageReceived += OnMessageReceived;
             _client.UserJoined += OnUserJoined;
+            _client.Ready += OnReadyAsync;
 
             var newTask = new Task(async () => await MuteHandler());
             newTask.Start();
@@ -51,6 +58,19 @@ namespace discordbot.Services
             _service.CommandExecuted += OnCommandExecuted;
             await _service.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
         }
+
+
+    private async Task OnReadyAsync() {
+	// Avoid calling ConnectAsync again if it's already connected 
+	// (It throws InvalidOperationException if it's already connected).
+		if (!_LavaNode.IsConnected) {
+			await _LavaNode.ConnectAsync();
+		}
+		
+		// Other ready related stuff
+	}
+
+
 
         private async Task MuteHandler()
         {

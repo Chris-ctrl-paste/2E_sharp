@@ -10,7 +10,7 @@ namespace backend
         public DbSet<AutoRole> AutoRoles { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseMySql("server=localhost;user=root;database=nezuko;port=3306;Connect Timeout=5;");
+            => options.UseMySql("server=localhost;user=root;database=tutorial;port=3306;Connect Timeout=5;");
     }
 
     public class Server
